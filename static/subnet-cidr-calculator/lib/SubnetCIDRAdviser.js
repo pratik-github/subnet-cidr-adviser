@@ -258,6 +258,7 @@ var SubnetCIDRAdviser = {
 		result.netmaskBits = Math.max( 0, Math.min( 32, parseInt( netmaskBits )));  //sanity check: valid values: = 0-32 
 
 	  result.subnetMaskRange = AdviserHelper.IPv4SubnetMaskRange( result.netmaskBits );
+    console.log(result.subnetMaskRange ,'result.subnetMaskRange ')
     subnetsObj = AdviserHelper.IPv4PossibleSubnets( result, existingSubnetCIDR );
   	result.subnets = subnetsObj.subnets;
     result.subnetsExcluded = subnetsObj.subnetsExcluded;
