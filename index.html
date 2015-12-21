@@ -1,1 +1,138 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en" ng-app="SubnetAdviser">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="JavaScript class for calculating all possible subnets, subnet validity, ip range">
+    <meta name="author" content="pratik tayade">
+
+    <title>Subnet CIDR Adviser</title>
+    <!-- <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16"> -->
+    <!-- Bootstrap core CSS -->
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="http://css-spinners.com/css/spinner/circles.css" type="text/css">
+    <link href="static/css/custom.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Ceviche+One' rel='stylesheet' type='text/css'>
+  </head>
+
+  <body ng-controller="SubnetAdviserCtrl">
+
+     <nav class="navbar navbar-fixed-top navbar-dark bg-inverse">
+      <a class="navbar-brand logo" href="#">Subnet CIDR Adviser</a>
+      <a class="navbar-brand" href="#">JavaScript class for calculating all possible subnets, subnet validity, ip range</a>
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container text-center">
+        <small>Compatible with Node.js, Require.js, and direct use. See readme for instructions.</small>
+        <form class="form-inline" name="adviserFrm" id="adviserFrm" novalidate>
+          <div class="form-group">
+            <input type="text" required ng-model="params.networkip" name="networkip" class="form-control" id="networkip" placeholder="Network IP (10.0.0.0)">
+            <div class="error-msg" ng-show="(adviserFrm.networkip.$dirty && adviserFrm.networkip.$invalid) || !networkValidity.isValid">
+            <span ng-show="adviserFrm.networkip.$error.required || !networkValidity.isValid">{{networkValidity.msg || 'Network IP is required.'}}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <select class="form-control" required name="subnetmask" ng-model="params.subnetmask">
+              <option ng-selected="o == params.subnetmask" ng-repeat="o in voctet">/{{o}}</option>
+            </select>
+          </div>
+          <button ng-disabled="adviserFrm.$invalid" type="button" ng-click="generate()" class="btn btn-primary">Submit !</button>
+          <div class="error-msg text-center" ng-show="">
+            <span>{{networkValidity.msg}}</span>
+            </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row" ng-show="!probabal_subnets">
+        <div class="col-md-12">
+          <h2 class="text-center">Please "Submit" to generate list..</h2>
+        </div>
+      </div>
+
+      <div class="row" ng-hide="!probabal_subnets">
+        <h5 class="text-left title">Available Subnets</h5>
+        <div class="col-md-4">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Subnet CIDR</th>
+                <th>IP Range</th>
+                <th class="pull-right">3rd Octet</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col-md-4">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Subnet CIDR</th>
+                <th>IP Range</th>
+                <th class="pull-right">3rd Octet</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="col-md-4">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Subnet CIDR</th>
+                <th>IP Range</th>
+                <th class="pull-right">3rd Octet</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+
+      <div class="row div-table-content subnet-list" ng-hide="!probabal_subnets || hidesubnetlist">
+        <div class="col-md-4" ng-repeat="s in probabal_subnets.subnets">
+            <span class="span4"><i ng-click="addToExisting(s.value)" title="Add to Existing subnets list" class="fa fa-check green_"></i>  {{s.value}}</span>
+            <span class="span4 pull-right w-range">{{display3rdOctet(s.range)}}</span>
+            <span class="span4 pull-right w-iprange">{{s.ipRange.start}} - {{s.ipRange.end}}</span>
+        </div>
+        
+      </div>
+      <hr>
+      <button ng-hide="!probabal_subnets" type="button" ng-click="toggleList()" class="btn btn-primary center-block btn-xs">Toggle Available Subnets List</button>
+      <div class="row excluded-list" ng-hide="!probabal_subnets || probabal_subnets.subnetsExcluded.length == 0">
+        <h5 class="text-left title">Existing Subnets and Subnets which overlaps with Existing</h5>
+        <div class="list">
+          {{probabal_subnets.subnetsExcluded.join(', ')}}
+        </div>
+      </div>
+      <hr ng-hide="!probabal_subnets">
+      <!-- <footer>
+        <p>&copy; Subnet CIDR Adviser</p>
+      </footer> -->
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="static/subnet-cidr-calculator/lib/SubnetCIDRAdviser.js"></script>
+    <script src="static/js/app.js"></script>
+
+    <!-- <div id="fixedpanel">
+        <div class="existinglist">Existing Subnets and Subnets which overlaps with Existing</div>
+    </div> -->
+    <div class="block-ui">
+      <div class="circles-loader loader">
+        Loading…
+      </div>
+    </div>
+  </body>
+</html>
