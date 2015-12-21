@@ -16,6 +16,15 @@ What does it do?
 
 * Suggest next possible subnet  (you need to provide a list of existing subnets).
 
+Download
+-------
+
+* [npm](https://www.npmjs.com/package/subnet-cidr-calculator)
+
+Demo
+-------
+
+* [demo](http://pratik-github.github.io/subnet-cidr-adviser/)
 
 Support
 -------
