@@ -113,7 +113,7 @@ h5.title {
 #fixedpanel {
     top: 40%;
     height: 150px;
-    width: 30px;
+    width: 38px;
     position: fixed;
     left: 0;
     cursor: pointer;
@@ -124,7 +124,7 @@ h5.title {
 }
 
 #fixedpanel .existinglist {
-    height: 143px;
+    height: 132px;
     width: 150px;
     transition: ease 500ms;
     background-size: 50px;
@@ -135,6 +135,19 @@ h5.title {
     color: #FFF;
 }
 
+.subnetdetails #ips {
+    text-align: justify;
+    max-height: 220px;
+    overflow-y: scroll;
+}
+
+.subnetdetails #ips span{
+    width: 25%;
+}
+
+.subnetdetails div.col-sm-8{
+    margin-top: 7px;
+}
 /* Let's get this party started */
 ::-webkit-scrollbar {
     width: 6px;

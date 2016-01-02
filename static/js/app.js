@@ -14,6 +14,12 @@ function SubnetAdviserCtrl($scope, $http) {
     	hideLoader();
     };
 
+    $scope.generateSubnetInfo = function(){
+        $('.block-ui').show();
+        $scope.subnetDetails = SubnetCIDRAdviser.getSubnetDetails($scope.subnet.networkip + "/" + $scope.subnet.subnetmask);
+        hideLoader();
+    };
+
     var hideLoader = function() {
     	setTimeout(function(){ $('.block-ui').hide(); }, 1200);
     }
@@ -21,11 +27,18 @@ function SubnetAdviserCtrl($scope, $http) {
     $scope.setDefaults = function() {
     	$scope.params = {
     		'networkip': '10.0.0.0',
-    		'subnetmask': 16
+    		'subnetmask': 24
     	};
+        $scope.subnet = {
+            'networkip': '10.0.87.0',
+            'subnetmask': 24
+        };
     	$scope.networkValidity = {
     		'isValid': true
     	};
+        $scope.snetworkValidity = {
+            'isValid': true
+        };
     };
 
     $scope.addToExisting = function(s) {
@@ -43,4 +56,5 @@ function SubnetAdviserCtrl($scope, $http) {
 
     $scope.setDefaults();
     $scope.generate();
+    $scope.generateSubnetInfo();
 }

@@ -103,7 +103,10 @@
         
       </div>
       <hr>
-      <button ng-hide="!probabal_subnets" type="button" ng-click="toggleList()" class="btn btn-primary center-block btn-xs">Toggle Available Subnets List</button>
+      <div class="row text-right">
+        <i title="Add to Existing subnets list" class="fa fa-check green_"></i> to add subnet to "Existing subnet list"
+      </div>
+      <!-- <button ng-hide="!probabal_subnets" type="button" ng-click="toggleList()" class="btn btn-primary center-block btn-xs">Toggle Available Subnets List</button> -->
       <div class="row excluded-list" ng-hide="!probabal_subnets || probabal_subnets.subnetsExcluded.length == 0">
         <h5 class="text-left title">Existing Subnets and Subnets which overlaps with Existing</h5>
         <div class="list">
@@ -126,13 +129,69 @@
     <script src="static/subnet-cidr-calculator/lib/SubnetCIDRAdviser.js"></script>
     <script src="static/js/app.js"></script>
 
-    <!-- <div id="fixedpanel">
-        <div class="existinglist">Existing Subnets and Subnets which overlaps with Existing</div>
-    </div> -->
+    <div id="fixedpanel">
+        <div class="existinglist" data-toggle="modal" data-target="#myModal">IP's in Subnet</div>
+    </div>
     <div class="block-ui">
       <div class="circles-loader loader">
         Loading…
       </div>
     </div>
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Generate list of all IPs in a given subnet</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-inline text-center" name="subnetIpFrm" id="subnetIpFrm" novalidate>
+          <div class="form-group">
+            <input type="text" required ng-model="subnet.networkip" name="networkip" class="form-control" id="networkip" placeholder="Network IP (10.0.0.0)">
+            <div class="error-msg" ng-show="(subnetIpFrm.networkip.$dirty && subnetIpFrm.networkip.$invalid) || !snetworkValidity.isValid">
+            <span ng-show="subnetIpFrm.networkip.$error.required || !networkValidity.isValid">{{snetworkValidity.msg || 'Network IP is required.'}}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <select class="form-control" required name="subnetmask" ng-model="subnet.subnetmask">
+              <option ng-selected="o == params.subnetmask" value="{{o}}" ng-repeat="o in voctet">/{{o}}</option>
+            </select>
+          </div>
+          <button ng-disabled="subnetIpFrm.$invalid" type="button" ng-click="generateSubnetInfo()" class="btn btn-primary">Submit !</button>
+          <div class="error-msg text-center" ng-show="">
+            <span>{{snetworkValidity.msg}}</span>
+            </div>
+        </form>
+        <form class="form-horizontal subnetdetails" role="form">
+          <h5 class="text-left title">Details</h5>
+          <div class="form-group">
+            <label class="col-sm-4 control-label" for="textinput">No of Hosts</label>
+            <div class="col-sm-8">{{subnetDetails.noofhosts}}</div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label" for="textinput">Start Address</label>
+            <div class="col-sm-8">{{subnetDetails.startAddr}}</div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label" for="textinput">End Address</label>
+            <div class="col-sm-8">{{subnetDetails.endAddr}}</div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label" for="textinput">All Addresses</label>
+            <div class="col-sm-8" id="ips">{{subnetDetails.hosts.join(', ')}}</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
   </body>
 </html>

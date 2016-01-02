@@ -36,6 +36,45 @@ AdviserHelper.ip2Integer = function( ip ){
   return ( parseInt(ipBytes[3]) + (256 * parseInt(ipBytes[2])) + (256 * 256 * parseInt(ipBytes[1])) + (256 * 256 * 256 * parseInt(ipBytes[0])));
 };
 
+AdviserHelper.checkIp = function (ip) {
+  if(typeof ip !== 'string') return false; // only do strings
+  var matches = ip.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/);
+  return (matches ? true : false);
+};
+
+AdviserHelper.ip2long = function (ip_address) {
+  if(!AdviserHelper.checkIp(ip_address)) return false; // invalid IP address
+  var parts = ip_address.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  return parts ? parts[1] * 16777216 + parts[2] * 65536 + parts[3] * 256 + parts[4] * 1 : false;
+};
+
+AdviserHelper.long2ip = function (ip) {
+  //  discuss at: http://phpjs.org/functions/long2ip/
+  // original by: Waldo Malqui Silva (http://waldo.malqui.info)
+  if (!isFinite(ip))
+    return false;
+
+  return [ip >>> 24, ip >>> 16 & 0xFF, ip >>> 8 & 0xFF, ip & 0xFF].join('.');
+};
+
+AdviserHelper.getSubnetDetails = function(subnet) {
+
+  var details = {'hosts': []};
+  if(!AdviserHelper.isValidNetwork(subnet)) return ips;
+
+  var size = Math.pow(2, 32 - subnet.split('/')[1] );
+  var iprange = AdviserHelper.getIpRangeForSubnet(subnet);
+  var first = AdviserHelper.ip2long(iprange.start);
+  for (var i = 0; i < size; i++) {
+    var ip = i + first;
+    details.hosts.push(AdviserHelper.long2ip(ip));
+  }
+  details.noofhosts = size;
+  details.startAddr = iprange.start;
+  details.endAddr = iprange.end;
+  return details;
+};
+
 AdviserHelper.getUnique = function( arr ){
   var u = {}, a = [];
   for(var i = 0, l = arr.length; i < l; ++i){
@@ -60,11 +99,11 @@ AdviserHelper.probabalCombinations = function( arr, Addressbytes, position_ ){
   }
 
   try {
-  	var sum = set.reduce(function(a, b) { return a + b; });
-  	res.push(sum);
-  	} catch(e) {
+    var sum = set.reduce(function(a, b) { return a + b; });
+    res.push(sum);
+    } catch(e) {
 
-  	}
+    }
   }
   res = res.filter(function(n) { return n >= Addressbytes[position_] });
   if(arr.indexOf(0) != -1) {res.push(0)};
@@ -106,7 +145,7 @@ AdviserHelper.isSubnetOverlap = function( existingSubnetCIDR, subnetCIDR ){
   existingSubnetCIDR.forEach(function(s) {
   var ipRange = AdviserHelper.getIpRangeForSubnet(s);
   if((AdviserHelper.ip2Integer(ipRangeforCurrent.start) >= AdviserHelper.ip2Integer(ipRange.start) && AdviserHelper.ip2Integer(ipRangeforCurrent.start) <= AdviserHelper.ip2Integer(ipRange.end)) || (AdviserHelper.ip2Integer(ipRangeforCurrent.end) >= AdviserHelper.ip2Integer(ipRange.start) && AdviserHelper.ip2Integer(ipRangeforCurrent.end) <= AdviserHelper.ip2Integer(ipRange.end)) ||  (AdviserHelper.ip2Integer(ipRange.start) >= AdviserHelper.ip2Integer(ipRangeforCurrent.start) && AdviserHelper.ip2Integer(ipRange.start) <= AdviserHelper.ip2Integer(ipRangeforCurrent.end)) || (AdviserHelper.ip2Integer(ipRange.end) >= AdviserHelper.ip2Integer(ipRangeforCurrent.start) && AdviserHelper.ip2Integer(ipRange.end) <= AdviserHelper.ip2Integer(ipRangeforCurrent.end)) ) {
-	isOverlap = s;
+  isOverlap = s;
   }
   });
   return isOverlap;
@@ -147,7 +186,7 @@ AdviserHelper.getIpRangeForSubnet = function( subnetCIDR ){
   return {'start': sIndex.join('.'), 'end': eIndex.join('.')};
 };
 
-AdviserHelper.isValidVPC = function( ip, netmask ){
+AdviserHelper.isValidNetwork = function( ip, netmask ){
   var result = {'isValid': true};
   var pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   if(netmask < 16 || netmask > 28){
@@ -241,41 +280,40 @@ AdviserHelper.generatePossibleSubnetFor = function( o, i, existingSubnetCIDR ){
 
 
 var SubnetCIDRAdviser = {
-	calculate : function( vpcAddress, netmaskBits, existingSubnetCIDR )
-	{
-		var result = {};
-		var existingSubnetCIDR = existingSubnetCIDR || [];
+  calculate : function( vpcAddress, netmaskBits, existingSubnetCIDR )
+  {
+    var result = {};
+    var existingSubnetCIDR = existingSubnetCIDR || [];
     var subnetsObj = {};
 
-    var networkValidity = AdviserHelper.isValidVPC( vpcAddress, netmaskBits );
+    var networkValidity = AdviserHelper.isValidNetwork( vpcAddress, netmaskBits );
     if(!networkValidity.isValid) {
       return networkValidity;
     }
-		var addressOctets = AdviserHelper.cleanOctets(vpcAddress.split( '.', 4 ));
-		result.pureAddressbytes = [addressOctets[0], addressOctets[1], addressOctets[2], addressOctets[3]];
-		vpcAddress = ( addressOctets[0] +'.'+ addressOctets[1] +'.'+ addressOctets[2] +'.'+ addressOctets[3] );
-		result.addressDotQuad = vpcAddress.toString();
-		result.netmaskBits = Math.max( 0, Math.min( 32, parseInt( netmaskBits )));  //sanity check: valid values: = 0-32 
+    var addressOctets = AdviserHelper.cleanOctets(vpcAddress.split( '.', 4 ));
+    result.pureAddressbytes = [addressOctets[0], addressOctets[1], addressOctets[2], addressOctets[3]];
+    vpcAddress = ( addressOctets[0] +'.'+ addressOctets[1] +'.'+ addressOctets[2] +'.'+ addressOctets[3] );
+    result.addressDotQuad = vpcAddress.toString();
+    result.netmaskBits = Math.max( 0, Math.min( 32, parseInt( netmaskBits )));  //sanity check: valid values: = 0-32 
 
-	  result.subnetMaskRange = AdviserHelper.IPv4SubnetMaskRange( result.netmaskBits );
-    console.log(result.subnetMaskRange ,'result.subnetMaskRange ')
+    result.subnetMaskRange = AdviserHelper.IPv4SubnetMaskRange( result.netmaskBits );
     subnetsObj = AdviserHelper.IPv4PossibleSubnets( result, existingSubnetCIDR );
-  	result.subnets = subnetsObj.subnets;
+    result.subnets = subnetsObj.subnets;
     result.subnetsExcluded = subnetsObj.subnetsExcluded;
- 		return result;
-	},
+    return result;
+  },
   isValidVPC : function( ip, netmask )
   {
-    return AdviserHelper.isValidVPC( ip, netmask );
+    return AdviserHelper.isValidNetwork( ip, netmask );
   },
-	isSubnetOverlap : function( existingSubnetCIDR, subnetCIDR )
-	{
-		return AdviserHelper.isSubnetOverlap( existingSubnetCIDR, subnetCIDR );
-	},
-	getIpRangeForSubnet : function( subnetCIDR )
-	{
-		return AdviserHelper.getIpRangeForSubnet( subnetCIDR );
-	},
+  isSubnetOverlap : function( existingSubnetCIDR, subnetCIDR )
+  {
+    return AdviserHelper.isSubnetOverlap( existingSubnetCIDR, subnetCIDR );
+  },
+  getIpRangeForSubnet : function( subnetCIDR )
+  {
+    return AdviserHelper.getIpRangeForSubnet( subnetCIDR );
+  },
   getNextValidCIDR : function( parentVPC_CIDR, existingSubnetCIDR, probabal_subnets, cidrToValidate )
   {
     return AdviserHelper.getValidCIDR( parentVPC_CIDR, existingSubnetCIDR, probabal_subnets, cidrToValidate );
@@ -283,14 +321,18 @@ var SubnetCIDRAdviser = {
   isValidSubnetCIDR : function( probabal_subnets, existingSubnetCIDR, cidrToValidate, vpcCidr )
   {
     return AdviserHelper.isValidSubnetCIDR( probabal_subnets, existingSubnetCIDR, cidrToValidate, vpcCidr );
+  },
+  getSubnetDetails : function( subnet )
+  {
+    return AdviserHelper.getSubnetDetails( subnet );
   }
 };
 
 if( ( typeof define === 'function' ) )
 {
-	define( [], function() { return SubnetCIDRAdviser; } );
+  define( [], function() { return SubnetCIDRAdviser; } );
 }
 else if( typeof exports === 'object' )
 {
-	module.exports = SubnetCIDRAdviser;
+  module.exports = SubnetCIDRAdviser;
 }

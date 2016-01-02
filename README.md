@@ -16,6 +16,8 @@ What does it do?
 
 * Suggest next possible subnet  (you need to provide a list of existing subnets).
 
+* Takes a Subnet CIDR network address and returns information ( all hosts, start address, end address)
+
 Download
 -------
 
@@ -55,6 +57,9 @@ console.log(is_overlap, 'subnetOverlap');
 var ip_range = SubnetCIDRAdviser.getIpRangeForSubnet( '10.0.32.0/20' );
 console.log('IP range for 10.0.32.0/20 is', ip_range);
 
+var subnetdetails = SubnetCIDRAdviser.getSubnetDetails( '10.0.32.0/20' );
+console.log('Details for 10.0.32.0/20 is', subnetdetails);
+
 var parentVPC_CIDR = '10.0.0.0/16';
 var cidrToValidate = '';
 var getNextValidCIDR = SubnetCIDRAdviser.getNextValidCIDR( parentVPC_CIDR, existingSubnetCIDR, probabal_subnets, cidrToValidate );
@@ -88,6 +93,11 @@ Direct browser use
   console.log(is_overlap, 'subnetOverlap');
   var ip_range = SubnetCIDRAdviser.getIpRangeForSubnet( '10.0.32.0/20' );
   console.log('IP range for 10.0.32.0/20 is', ip_range);
+
+
+  var subnetdetails = SubnetCIDRAdviser.getSubnetDetails( '10.0.32.0/20' );
+  console.log('Details for 10.0.32.0/20 is', subnetdetails);
+
 
   var parentVPC_CIDR = '10.0.0.0/16';
   var cidrToValidate = '';
