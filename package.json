@@ -1,6 +1,7 @@
 {
   "name": "subnet-cidr-calculator",
   "version": "1.0.9",
+  "license": "MIT",
   "description": "JavaScript class for calculating all possible subnets, subnet validity, ip range",
   "main": "index.js",
   "scripts": {
@@ -16,6 +17,10 @@
     "range"
   ],
   "author": "pratik tayade <pratiktayade@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pratik-github/subnet-cidr-adviser.git"
+  },
   "dependencies": {
     "underscore": "^1.8.3"
   }
