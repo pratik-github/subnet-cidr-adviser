@@ -1,6 +1,6 @@
 {
   "name": "subnet-cidr-calculator",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "license": "MIT",
   "description": "JavaScript class for calculating all possible subnets, subnet validity, ip range",
   "main": "index.js",
